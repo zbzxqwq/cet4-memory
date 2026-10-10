@@ -1,0 +1,9 @@
+{
+  "_说明": "安装到 C:\\Users\\20682\\.codex\\skills\\ 后使用的配置（绝对路径）。",
+  "dbPath": "D:\\deepseek本地\\四级记忆\\words.js",
+  "progressPath": "D:\\deepseek本地\\四级记忆\\data\\进度.json",
+  "copyDir": "C:\\Users\\20682\\Desktop\\英语四级\\抄写",
+  "dictationDir": "C:\\Users\\20682\\Desktop\\英语四级\\默写",
+  "correctionDir": "C:\\Users\\20682\\Desktop\\英语四级\\纠错",
+  "dailyCount": 50
+}

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#4f7cff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>四级记忆 · 每日单词小助手</title>
+<style>
+:root{
+  --blue:#4f7cff; --blue-d:#3358d4; --green:#22c55e; --green-d:#16a34a;
+  --orange:#ff9f43; --red:#ff5c5c; --purple:#a855f7;
+  --ink:#1f2b4d; --ink-2:#5a6b96; --line:#e6ebf7; --card:#ffffff; --bg:#eef3ff;
+  --shadow:0 8px 24px rgba(60,90,170,.12);
+  --radius:20px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+  background:linear-gradient(180deg,#eef3ff 0%,#f7f9ff 40%,#eef7f1 100%);
+  color:var(--ink); min-height:100vh; padding-bottom:84px;
+}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 8px}
+.topbar{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,#4f7cff,#7aa2ff);
+  color:#fff;border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);
+}
+.topbar .avatar{font-size:30px;line-height:1}
+.topbar .who{flex:1;min-width:0}
+.topbar .who b{display:block;font-size:17px}
+.topbar .who span{font-size:12px;opacity:.9}
+.streak{
+  background:rgba(255,255,255,.22);border-radius:14px;padding:6px 10px;
+  font-size:12px;text-align:center;line-height:1.3;white-space:nowrap;
+}
+.streak b{display:block;font-size:18px}
+.card{
+  background:var(--card);border-radius:var(--radius);padding:18px;
+  box-shadow:var(--shadow);margin-top:14px;
+}
+.card h2{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:8px}
+.muted{color:var(--ink-2);font-size:13px;line-height:1.6}
+.ringbox{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ring{position:relative;width:118px;height:118px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .num{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-weight:800;
+}
+.ring .num i{font-style:normal;font-size:26px;color:var(--blue-d)}
+.ring .num em{font-style:normal;font-size:11px;color:var(--ink-2);font-weight:600}
+.ringinfo{flex:1;min-width:180px}
+.ringinfo .big{font-size:20px;font-weight:800;margin-bottom:6px}
+.pill{
+  display:inline-block;background:#eef3ff;color:var(--blue-d);
+  border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;margin:3px 6px 3px 0;
+}
+.pill.g{background:#e8f9ef;color:var(--green-d)}
+.pill.o{background:#fff3e4;color:#c9701a}
+.pill.r{background:#ffeded;color:#d63b3b}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border:none;border-radius:16px;padding:15px;
+  font-size:16px;font-weight:800;color:#fff;cursor:pointer;
+  background:var(--blue);box-shadow:0 6px 16px rgba(79,124,255,.32);
+  transition:transform .12s, box-shadow .12s; font-family:inherit;
+}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 8px rgba(79,124,255,.3)}
+.btn.g{background:var(--green);box-shadow:0 6px 16px rgba(34,197,94,.32)}
+.btn.o{background:var(--orange);box-shadow:0 6px 16px rgba(255,159,67,.32)}
+.btn.r{background:var(--red);box-shadow:0 6px 16px rgba(255,92,92,.32)}
+.btn.ghost{background:#fff;color:var(--blue-d);box-shadow:inset 0 0 0 2px #dbe4ff}
+.btn.ghost.sel{background:#fff5ea;color:#c9701a;box-shadow:inset 0 0 0 2px var(--orange)}
+.btn.sm{padding:11px;font-size:14px;border-radius:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.btnrow.one{grid-template-columns:1fr}
+.btnrow.three{grid-template-columns:1fr 1fr 1fr}
+.btnrow.four{grid-template-columns:1fr 1fr 1fr 1fr}
+.btnrow.five{grid-template-columns:repeat(5,1fr)}
+#studyCard{
+  background:linear-gradient(180deg,#ffffff,#f6f9ff);
+  border-radius:24px;box-shadow:var(--shadow);padding:22px;margin-top:14px;
+  text-align:center;position:relative;overflow:hidden;
+}
+#studyCard::before{
+  content:"";position:absolute;inset:-60px -60px auto auto;width:180px;height:180px;
+  background:radial-gradient(circle,#dfe8ff,transparent 70%);border-radius:50%;
+}
+.lvlbadge{
+  display:inline-block;font-size:11px;font-weight:800;padding:4px 10px;
+  border-radius:999px;background:#fff3e4;color:#c9701a;position:relative;
+}
+.lvlbadge.l1{background:#ffe9e9;color:#d63b3b}
+.lvlbadge.l2{background:#fff3e4;color:#c9701a}
+.lvlbadge.l3{background:#eef3ff;color:var(--blue-d)}
+.lvlbadge.l4{background:#f1f0ff;color:#6b5bd2}
+.word{
+  font-size:clamp(30px,9vw,46px);font-weight:800;letter-spacing:.5px;
+  margin:14px 0 6px;color:var(--ink);word-break:break-word;position:relative;
+}
+.word .spk{font-size:20px;margin-left:8px;cursor:pointer;vertical-align:middle}
+.defs{text-align:left;margin:16px 0 4px;position:relative}
+.defrow{
+  display:flex;gap:10px;align-items:flex-start;background:#fff;
+  border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-bottom:9px;
+}
+.defrow .pos{
+  flex:none;font-size:12px;font-weight:800;color:#fff;background:var(--purple);
+  border-radius:8px;padding:3px 8px;margin-top:2px;min-width:44px;text-align:center;
+}
+.defrow .cn{font-size:16px;line-height:1.6;font-weight:600}
+.hiddenBox{
+  background:#f2f5ff;border:2px dashed #c9d6ff;border-radius:16px;
+  padding:26px 16px;color:var(--blue-d);font-weight:700;font-size:15px;
+  cursor:pointer;margin:16px 0 4px;
+}
+.hiddenBox small{display:block;color:var(--ink-2);font-weight:500;font-size:12px;margin-top:6px}
+.example{
+  margin-top:12px;font-size:13px;color:var(--ink-2);text-align:left;
+  background:#fafbff;border-left:3px solid var(--blue);border-radius:8px;padding:9px 12px;display:none;
+}
+.qcount{font-size:12px;color:var(--ink-2);font-weight:700;position:relative}
+.banner{
+  border-radius:var(--radius);padding:15px 16px;margin-top:14px;
+  display:none;align-items:flex-start;gap:12px;box-shadow:var(--shadow);
+  background:linear-gradient(135deg,#fff4e5,#ffe9cc);border:2px solid #ffd9a8;
+}
+.banner.on{display:flex}
+.banner .ico{font-size:26px;line-height:1}
+.banner b{display:block;font-size:15px;margin-bottom:3px;color:#a75c0c}
+.banner p{margin:0;font-size:13px;color:#8a6417;line-height:1.55}
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:rgba(255,255,255,.96);backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);display:flex;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+.tabbar button{
+  flex:1;background:none;border:none;padding:7px 2px;cursor:pointer;
+  font-family:inherit;color:var(--ink-2);font-size:11px;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:12px;
+}
+.tabbar button i{font-style:normal;font-size:21px;line-height:1}
+.tabbar button.active{color:var(--blue-d);background:#eef3ff}
+.list{margin-top:10px}
+.item{
+  display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;
+  border:1px solid var(--line);margin-bottom:8px;background:#fff;
+}
+.item .w{font-weight:800;font-size:16px;flex:none;min-width:96px}
+.item .m{flex:1;font-size:12px;color:var(--ink-2);line-height:1.5;overflow:hidden}
+.item.ok{background:#f2fdf6;border-color:#c9f0d8}
+.item.bad{background:#fff6f6;border-color:#ffd6d6}
+.tag{font-size:11px;font-weight:800;border-radius:8px;padding:3px 8px;flex:none}
+.tag.ok{background:#dcfce7;color:#15803d}
+.tag.bad{background:#fee2e2;color:#b91c1c}
+.searchrow{display:flex;gap:8px;margin-top:10px}
+.searchbox{position:relative;flex:1;display:flex}
+.searchbox input{
+  width:100%;border:2px solid var(--line);border-radius:14px;padding:12px 42px 12px 14px;
+  font-size:15px;font-family:inherit;outline:none;background:#fff;color:var(--ink);
+}
+.searchbox input:focus{border-color:var(--blue)}
+.clearbtn{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:30px;height:30px;border:none;border-radius:50%;background:#eef3ff;color:var(--blue-d);
+  font-size:15px;font-weight:800;line-height:1;cursor:pointer;display:none;font-family:inherit;
+}
+.clearbtn.on{display:block}
+.histrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{
+  background:#f2f5ff;color:var(--blue-d);border:1px solid #dbe4ff;border-radius:999px;
+  padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
+}
+.chip:active{background:#dbe4ff}
+.linkbtn{
+  background:none;border:none;color:#d63b3b;font-size:12px;font-weight:800;
+  text-decoration:underline;cursor:pointer;font-family:inherit;padding:4px 2px;
+}
+.letterbar{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.letterbtn{
+  min-width:27px;padding:5px 6px;border:1px solid #dbe4ff;background:#fff;color:var(--blue-d);
+  border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;
+}
+.letterbtn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.letterbtn.empty{color:#c3ccdf;border-color:#eef1f8;background:#fafbff}
+.pagebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.pagebtn{
+  border:none;background:#eef3ff;color:var(--blue-d);font-weight:800;font-size:13px;
+  padding:10px 14px;border-radius:12px;cursor:pointer;font-family:inherit;white-space:nowrap;
+}
+.pagebtn:disabled{opacity:.4;cursor:not-allowed}
+.pagebtn:active{background:#dbe4ff}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.stat{background:#f7f9ff;border-radius:16px;padding:14px;text-align:center}
+.stat b{display:block;font-size:24px;color:var(--blue-d)}
+.stat span{font-size:12px;color:var(--ink-2);font-weight:600}
+.steps{margin:8px 0 0;padding-left:0;list-style:none}
+.steps li{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:14px;line-height:1.65}
+.steps li .n{
+  flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);
+  color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;
+}
+.view{display:none}
+.view.on{display:block}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:99;display:none;align-items:center;justify-content:center}
+.confetti.on{display:flex;pointer-events:auto}
+.confetti .box{
+  background:#fff;border-radius:24px;padding:26px 30px;text-align:center;
+  box-shadow:0 20px 50px rgba(40,70,140,.25);animation:pop .35s ease-out;
+}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.confetti .em{font-size:52px}
+.confetti h3{margin:8px 0 4px;font-size:19px}
+.confetti p{margin:0 0 14px;font-size:13px;color:var(--ink-2)}
+.toast{
+  position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);
+  background:rgba(31,43,77,.94);color:#fff;padding:11px 20px;border-radius:999px;
+  font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:120;
+  max-width:88vw;text-align:center;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="avatar">🐣</div>
+    <div class="who">
+      <b>四级记忆</b>
+      <span id="helloLine">每天 50 个单词，轻松记牢！</span>
+    </div>
+    <div class="streak">🔥 连续<b id="streakNum">0</b>天</div>
+  </div>
+
+  <!-- ================= 首页 ================= -->
+  <section class="view on" id="v-home">
+    <div class="banner" id="reminderBanner">
+      <div class="ico">⏰</div>
+      <div>
+        <b>今天的单词还没学完哦！</b>
+        <p id="reminderText">还有单词没有完成，快去把它们都变成“已掌握”吧！</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📅 今日任务</h2>
+      <div class="muted" id="todayDate"></div>
+      <div class="ringbox" style="margin-top:12px">
+        <div class="ring">
+          <svg width="118" height="118">
+            <circle cx="59" cy="59" r="50" stroke="#e6ebf7" stroke-width="12" fill="none"></circle>
+            <circle id="ringArc" cx="59" cy="59" r="50" stroke="#4f7cff" stroke-width="12" fill="none"
+                    stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+          </svg>
+          <div class="num"><i id="ringDone">0</i><em id="ringTotal">/ 50</em></div>
+        </div>
+        <div class="ringinfo">
+          <div class="big" id="todayTitle">今天要学 50 个单词</div>
+          <span class="pill g">✅ 已掌握 <b id="mMasteredToday">0</b></span>
+          <span class="pill r">🔁 要复习 <b id="mWrongToday">0</b></span>
+          <span class="pill o">📚 剩余 <b id="mLeftToday">50</b></span>
+          <div class="muted" style="margin-top:8px">先学考试常考的重点词，再学普通词，越练越熟！</div>
+        </div>
+      </div>
+      <div class="btnrow" style="margin-top:16px">
+        <button class="btn" id="btnStart">🚀 开始学习</button>
+        <button class="btn o" id="btnReview">🔁 复习错词</button>
+      </div>
+      <div class="btnrow one">
+        <button class="btn ghost sm" id="btnExportToday">📄 导出今天的单词表 (Word)</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🌟 我的成绩</h2>
+      <div class="statgrid">
+        <div class="stat"><b id="sMastered">0</b><span>已经掌握的单词</span></div>
+        <div class="stat"><b id="sRest">0</b><span>还没掌握的单词</span></div>
+        <div class="stat"><b id="sTotalDays">0</b><span>学习天数</span></div>
+        <div class="stat"><b id="sStars">0</b><span>获得的小星星 ⭐</span></div>
+      </div>
+      <div class="btnrow one">
+        <button class="btn ghost sm" id="btnExportWrong">📄 导出“不会的单词” (Word)</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>👦 小朋友怎么用？（三步就会）</h2>
+      <ul class="steps">
+        <li><span class="n">1</span><div>点 <b>开始学习</b>，屏幕上会出现一个英语单词，先自己想一想它的中文意思。</div></li>
+        <li><span class="n">2</span><div>想起来了就点 <b>我会了</b>；想不起来就点 <b>还不会</b>。<b>不管点哪个，第一次都会先给你看中文意思。</b></div></li>
+        <li><span class="n">3</span><div>对完答案，<b>再点一次同一个按钮</b>（按钮会变成「…继续 →」）才会跳到下一个单词。点「还不会」的单词过一会儿还会再回来找你。</div></li>
+      </ul>
+      <div class="muted">💡 点单词旁边的小喇叭 🔊 可以听单词怎么读。每天学完目标数量，就有小星星奖励哦！</div>
+    </div>
+  </section>
+
+  <!-- ================= 学习页 ================= -->
+  <section class="view" id="v-study">
+    <div class="card" style="padding:14px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <button class="btn ghost sm" style="width:auto;padding:8px 14px" id="btnBackHome">← 回首页</button>
+        <span class="qcount" id="qCounter">第 1 / 50 个</span>
+      </div>
+    </div>
+
+    <div id="studyCard">
+      <span class="lvlbadge l1" id="lvlBadge">核心必考词</span>
+      <div class="word"><span id="wordText">hello</span><span class="spk" id="btnSpeak" title="听发音">🔊</span></div>
+      <div class="qcount" id="hintLine">先想一想：它是什么意思？</div>
+
+      <div class="btnrow" id="judgeRow" style="margin-top:16px">
+        <button class="btn g" id="btnKnow">😃 我会了</button>
+        <button class="btn r" id="btnDunno">🤔 还不会</button>
+      </div>
+
+      <div id="defArea">
+        <div class="hiddenBox" id="hiddenBox">
+          👀 想不起来？点这里看中文意思
+          <small>看完再决定点「我会了」还是「还不会」</small>
+        </div>
+        <div class="defs" id="defs" style="display:none"></div>
+        <div class="example" id="example"></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:13px 16px">
+      <div class="muted" id="sessionTip">小提示：不确定的时候，点“还不会”也没关系，多见面就能记住啦！</div>
+    </div>
+  </section>
+
+  <!-- ================= 错词本 ================= -->
+  <section class="view" id="v-wrong">
+    <div class="card">
+      <h2>🔁 我的错词本</h2>
+      <div class="muted">这些是点了“还不会”的单词，多复习几次就记住啦！</div>
+      <div class="btnrow" style="margin-top:12px">
+        <button class="btn r" id="btnStudyWrong">开始复习错词</button>
+        <button class="btn ghost" id="btnExportWrong2">导出错词 (Word)</button>
+      </div>
+      <div class="list" id="wrongList"></div>
+    </div>
+  </section>
+
+  <!-- ================= 词库 ================= -->
+  <section class="view" id="v-bank">
+    <div class="card">
+      <h2>📚 单词库</h2>
+      <div class="muted" id="bankSummary"></div>
+      <div class="searchrow">
+        <div class="searchbox">
+          <input id="searchInput" placeholder="输入英语单词或中文意思来查找"
+                 autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="clearbtn" id="btnClearSearch" title="清空搜索">✕</button>
+        </div>
+      </div>
+
+      <div id="historyWrap" class="histrow" style="display:none">
+        <span class="muted" style="font-weight:700">最近搜索：</span>
+        <span id="historyChips"></span>
+        <button class="linkbtn" id="btnClearHistory">删除搜索记录</button>
+      </div>
+
+      <div class="letterbar" id="letterBar"></div>
+
+      <div class="list" id="bankList"></div>
+
+      <div class="pagebar">
+        <button class="pagebtn" id="btnPrevPage">← 上一页</button>
+        <span class="qcount" id="pageInfo">第 1 / 1 页</span>
+        <button class="pagebtn" id="btnNextPage">下一页 →</button>
+      </div>
+      <div class="btnrow three" style="margin-top:10px">
+        <button class="btn ghost sm page-size" data-n="50">每页 50 个</button>
+        <button class="btn ghost sm page-size" data-n="100">每页 100 个</button>
+        <button class="btn ghost sm page-size" data-n="200">每页 200 个</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 设置 ================= -->
+  <section class="view" id="v-more">
+    <div class="card">
+      <h2>⚙️ 设置</h2>
+      <div class="muted">每天的学习数量、提醒时间和数据管理。</div>
+
+      <div style="margin-top:14px">
+        <label class="muted" style="font-weight:700">每天学习多少个单词</label>
+        <div class="btnrow five" style="margin-top:8px">
+          <button class="btn ghost sm daily-opt" data-n="50">50</button>
+          <button class="btn ghost sm daily-opt" data-n="100">100</button>
+          <button class="btn ghost sm daily-opt" data-n="150">150</button>
+          <button class="btn ghost sm daily-opt" data-n="200">200</button>
+          <button class="btn ghost sm daily-opt" data-n="300">300</button>
+        </div>
+        <div class="muted" style="margin-top:6px">单位：个／天</div>
+      </div>
+
+      <div style="margin-top:18px">
+        <label class="muted" style="font-weight:700">什么时候提醒我</label>
+        <div class="btnrow four" style="margin-top:8px">
+          <button class="btn ghost sm time-opt" data-t="18">18:00</button>
+          <button class="btn ghost sm time-opt" data-t="19">19:00</button>
+          <button class="btn ghost sm time-opt" data-t="20">20:00</button>
+          <button class="btn ghost sm time-opt" data-t="21">21:00</button>
+        </div>
+        <div class="muted" style="margin-top:8px">到了这个时间还没学完，打开程序就会提醒你。（现在是 <b id="nowTimeSet">19:00</b>）</div>
+      </div>
+
+      <div style="margin-top:18px">
+        <label class="muted" style="font-weight:700">🔊 发音方式</label>
+        <div class="btnrow three" style="margin-top:8px">
+          <button class="btn ghost sm speak-opt" data-v="auto">自动</button>
+          <button class="btn ghost sm speak-opt" data-v="system">系统朗读</button>
+          <button class="btn ghost sm speak-opt" data-v="online">在线发音</button>
+        </div>
+        <div class="btnrow one" style="margin-top:8px">
+          <button class="btn ghost sm" id="btnTestSpeak">🔊 测试发音（点我听一听）</button>
+        </div>
+        <div class="muted" id="speakHint" style="margin-top:8px"></div>
+      </div>
+
+      <div class="btnrow one" style="margin-top:18px">
+        <button class="btn ghost sm" id="btnExportAll">📄 导出全部单词 (Word)</button>
+      </div>
+      <div class="btnrow one">
+        <button class="btn ghost sm" id="btnExportMastered">📄 导出“已掌握单词” (Word)</button>
+      </div>
+      <div style="margin-top:16px">
+        <label class="muted" style="font-weight:700">📦 和手机传进度（蓝牙 / 数据线 / 微信都行）</label>
+        <div class="btnrow" style="margin-top:8px">
+          <button class="btn ghost sm" id="btnSaveProgress">💾 导出学习记录</button>
+          <button class="btn ghost sm" id="btnLoadProgress">📂 导入学习记录</button>
+        </div>
+        <div class="muted" style="margin-top:8px">
+          「导出学习记录」会得到一个几 KB 的 <b>.json</b> 小文件。
+          用<b>蓝牙</b>、数据线或微信把它发到另一台设备，
+          在那台设备上点「导入学习记录」选中它，进度就搬过去了。<br>
+          两边是<b>合起来</b>算的，不会丢进度。
+        </div>
+      </div>
+      <div class="btnrow one">
+        <button class="btn o sm" id="btnAskNotify">🔔 允许弹窗提醒我</button>
+      </div>
+      <div class="btnrow one">
+        <button class="btn r sm" id="btnReset">⚠️ 清空所有学习记录</button>
+      </div>
+      <div class="muted" style="margin-top:14px">
+        数据都保存在这台设备里，程序不联网、不开任何网络服务。建议每周导出一次留档。
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>ℹ️ 关于</h2>
+      <div class="muted">
+        四级记忆 · 每日单词小助手<br>
+        词库共 <b id="dbCount">0</b> 个单词，每个单词都列出词性和中文意思。<br>
+        学习记录保存在本机，不上网、不外传。
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<nav class="tabbar">
+  <button data-tab="home" class="active"><i>🏠</i>首页</button>
+  <button data-tab="study"><i>📖</i>学习</button>
+  <button data-tab="wrong"><i>🔁</i>错词本</button>
+  <button data-tab="bank"><i>📚</i>词库</button>
+  <button data-tab="more"><i>⚙️</i>设置</button>
+</nav>
+
+<div class="confetti" id="celebrate">
+  <div class="box">
+    <div class="em">🎉</div>
+    <h3 id="celTitle">太棒啦！</h3>
+    <p id="celText"></p>
+    <button class="btn" id="celBtn" style="width:auto;padding:12px 28px;margin:0 auto">好的</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="words.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

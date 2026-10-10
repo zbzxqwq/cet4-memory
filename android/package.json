@@ -1,0 +1,20 @@
+{
+  "name": "cet4-memo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "四级记忆 · 每日单词小助手（Android 打包用）",
+  "scripts": {
+    "prepare-www": "node copy-www.js",
+    "add:android": "npx cap add android",
+    "sync": "npm run prepare-www && npx cap sync android",
+    "open:android": "npx cap open android",
+    "build:debug": "npm run sync && cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

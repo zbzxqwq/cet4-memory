@@ -1,0 +1,7 @@
+interface:
+  display_name: "四级记忆 · 每日单词计划"
+  short_description: "自动排好今天的四级单词表，并跟踪哪些已经掌握"
+  brand_color: "#4F7CFF"
+  default_prompt: "Use $cet4-daily-memo to prepare today's CET-4 word list and tell me how many words are left."
+policy:
+  allow_implicit_invocation: true

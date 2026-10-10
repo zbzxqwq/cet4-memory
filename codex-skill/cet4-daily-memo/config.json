@@ -1,0 +1,9 @@
+{
+  "_说明": "路径可以写相对路径（相对本文件），也可以写绝对路径。",
+  "dbPath": "../../words.js",
+  "progressPath": "../../data/进度.json",
+  "copyDir": "../../../抄写",
+  "dictationDir": "../../../默写",
+  "correctionDir": "../../../纠错",
+  "dailyCount": 50
+}
